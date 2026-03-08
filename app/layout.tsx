@@ -16,10 +16,13 @@ export const metadata: Metadata = {
   description: "Auth and Notes application",
 };
 
+// Додаємо modal до деструктуризації та типів
 export default function RootLayout({
   children,
+  modal,
 }: {
   children: React.ReactNode;
+  modal: React.ReactNode;
 }) {
   return (
     <html lang="en">
@@ -28,7 +31,10 @@ export default function RootLayout({
           <App>
             <div className="wrapper">
               <Header />
-              <main className="main">{children}</main>
+              <main className="main">
+                {children}
+                {modal} 
+              </main>
               <Footer />
             </div>
           </App>
