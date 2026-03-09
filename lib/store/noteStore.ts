@@ -1,11 +1,23 @@
 import { create } from 'zustand';
 
-interface NoteState {
-  notes: any[];
-  setNotes: (notes: any[]) => void;
+interface NoteDraft {
+  title: string;
+  content: string;
+  tag: string;
 }
 
+interface NoteState {
+  draft: NoteDraft;
+  setDraft: (draft: Partial<NoteDraft>) => void;
+  resetDraft: () => void;
+}
+
+const initialDraft = { title: '', content: '', tag: '' };
+
 export const useNoteStore = create<NoteState>((set) => ({
-  notes: [],
-  setNotes: (notes) => set({ notes }),
+  draft: initialDraft,
+  setDraft: (newDraft) => set((state) => ({ 
+    draft: { ...state.draft, ...newDraft } 
+  })),
+  resetDraft: () => set({ draft: initialDraft }),
 }));

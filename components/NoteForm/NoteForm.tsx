@@ -1,75 +1,49 @@
 'use client';
 
+import { useNoteStore } from '@/lib/store/noteStore';
 import { useRouter } from 'next/navigation';
-import styles from './NoteForm.module.css';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { clientApi } from '@/lib/api/clientApi';
+import { Note } from '@/types/note';
 
-interface NoteFormProps {
-  initialData?: { title: string; content: string; tag: string };
-  onSubmit: (data: { title: string; content: string; tag: string }) => void;
-  isPending?: boolean;
-}
-
-export default function NoteForm({ initialData, onSubmit, isPending }: NoteFormProps) {
+export default function NoteForm() {
+  const { draft, setDraft, resetDraft } = useNoteStore();
   const router = useRouter();
+  const queryClient = useQueryClient();
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    
-    const data = {
-      title: formData.get('title') as string,
-      tag: formData.get('tag') as string,
-      content: formData.get('content') as string,
-    };
-
-    if (!data.title.trim() || !data.content.trim()) return;
-    onSubmit(data);
-  };
+  const mutation = useMutation({
+    mutationFn: (newNote: { title: string; content: string; tag: string }) => 
+      clientApi.createNote(newNote),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notes'] });
+      resetDraft();
+      router.push('/notes');
+    }
+  });
 
   return (
-    <form className={styles.form} onSubmit={handleSubmit}>
-      <input
-        name="title"
-        type="text"
-        placeholder="Title"
-        className={styles.input}
-        defaultValue={initialData?.title || ''}
+    <form onSubmit={(e) => { e.preventDefault(); mutation.mutate(draft); }}>
+      <input 
+        value={draft.title} 
+        onChange={(e) => setDraft({ title: e.target.value })} 
+        placeholder="Заголовок"
         required
       />
-      <select 
-        name="tag"
-        className={styles.select}
-        defaultValue={initialData?.tag || 'Personal'}
-      >
-        <option value="Todo">Todo</option>
-        <option value="Work">Work</option>
-        <option value="Personal">Personal</option>
-        <option value="Meeting">Meeting</option>
-        <option value="Shopping">Shopping</option>
-      </select>
-      <textarea
-        name="content"
-        placeholder="Content"
-        className={styles.textarea}
-        defaultValue={initialData?.content || ''}
+      <textarea 
+        value={draft.content} 
+        onChange={(e) => setDraft({ content: e.target.value })} 
+        placeholder="Вміст нотатки..."
         required
       />
-      <div className={styles.actions}>
-        <button 
-          type="submit" 
-          className={styles.button} 
-          disabled={isPending}
-        >
-          {isPending ? 'Saving...' : 'Save'}
-        </button>
-        <button 
-          type="button" 
-          className={styles.cancelButton} 
-          onClick={() => router.back()}
-        >
-          Cancel
-        </button>
-      </div>
+      <input 
+        value={draft.tag} 
+        onChange={(e) => setDraft({ tag: e.target.value })} 
+        placeholder="Тег"
+      />
+      <button type="submit" disabled={mutation.isPending}>
+        {mutation.isPending ? 'Збереження...' : 'Зберегти'}
+      </button>
+      <button type="button" onClick={() => router.back()}>Скасувати</button>
     </form>
   );
 }

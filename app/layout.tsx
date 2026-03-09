@@ -1,6 +1,8 @@
 import "./global.css";
 import { AuthProvider } from "@/components/AuthProvider/AuthProvider";
 import { TanStackProvider } from "@/components/TanStackProvider/TanStackProvider";
+import Header from "@/components/Header/Header";
+import Footer from "@/components/Footer/Footer";
 
 export const metadata = {
   title: "Notes App",
@@ -19,8 +21,10 @@ export default function RootLayout({
       <body>
         <TanStackProvider>
           <AuthProvider>
+            <Header />
             <main>{children}</main>
             {modal}
+            <Footer />
           </AuthProvider>
         </TanStackProvider>
       </body>

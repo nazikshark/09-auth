@@ -1,5 +1,6 @@
 import axios from 'axios';
 
 export const api = axios.create({
-  baseURL: '/api',
+  baseURL: 'https://ac.goit.global/text-notes',
+  withCredentials: true,
 });

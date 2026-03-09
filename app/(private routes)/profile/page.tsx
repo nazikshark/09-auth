@@ -1,32 +1,25 @@
-'use client';
-
-import { useAuthStore } from '../../../lib/store/authStore';
+import { serverApi } from '@/lib/api/serverApi';
 import Image from 'next/image';
-import css from './ProfilePage.module.css';
+import Link from 'next/link';
 
-export default function ProfilePage() {
-  const { user } = useAuthStore();
+export const metadata = {
+  title: 'Profile | Notes App',
+};
 
-  if (!user) return <p>Access denied. Please log in.</p>;
+export default async function ProfilePage() {
+  const user = await serverApi.getUser();
 
   return (
-    <div className={css.profileContainer}>
-      <h1 className={css.title}>My Profile</h1>
-      <div className={css.infoCard}>
-        <div className={css.avatarWrapper}>
-          <Image 
-            src={user.avatar || '/default-avatar.png'} 
-            alt="Avatar" 
-            width={100} 
-            height={100} 
-            className={css.avatar}
-          />
-        </div>
-        <div className={css.details}>
-          <p><strong>Username:</strong> {user.username}</p>
-          <p><strong>Email:</strong> {user.email}</p>
-        </div>
-      </div>
+    <div className="profile-container">
+      <Image 
+        src={user.avatarUrl || '/default-avatar.png'} 
+        alt="Avatar" 
+        width={100} 
+        height={100} 
+      />
+      <h1>{user.username}</h1>
+      <p>{user.email}</p>
+      <Link href="/profile/edit">Змінити профіль</Link>
     </div>
   );
 }

@@ -1,32 +1,39 @@
 import { cookies } from 'next/headers';
-import { instance } from './api';
-import { User } from '../../types/user';
-import { Note } from '../../types/note';
-
-const getHeaders = async () => {
-  const cookieStore = await cookies();
-  return { Cookie: cookieStore.toString() };
-};
+import { api } from '@/app/api/api';
+import { Note } from '@/types/note';
+import { User } from '@/types/user';
+import { AxiosResponse } from 'axios';
 
 export const serverApi = {
-  async checkSession() {
-    const headers = await getHeaders();
-    const { data } = await instance.get<User | null>('/auth/session', { headers });
+  checkSession: async (): Promise<AxiosResponse<User>> => {
+    const cookieStore = await cookies();
+    return await api.get<User>('/auth/session', {
+      headers: { Cookie: cookieStore.toString() },
+    });
+  },
+
+  getUser: async (): Promise<User> => {
+    const cookieStore = await cookies();
+    const { data } = await api.get<User>('/users/me', {
+      headers: { Cookie: cookieStore.toString() },
+    });
     return data;
   },
-  async getMe() {
-    const headers = await getHeaders();
-    const { data } = await instance.get<User>('/users/me', { headers });
+
+  fetchNotes: async (params?: Record<string, string | number>): Promise<Note[]> => {
+    const cookieStore = await cookies();
+    const { data } = await api.get<Note[]>('/notes', {
+      params,
+      headers: { Cookie: cookieStore.toString() },
+    });
     return data;
   },
-  async fetchNotes(params: any) {
-    const headers = await getHeaders();
-    const { data } = await instance.get<Note[]>('/notes', { params, headers });
+
+  getNoteById: async (id: string): Promise<Note> => {
+    const cookieStore = await cookies();
+    const { data } = await api.get<Note>(`/notes/${id}`, {
+      headers: { Cookie: cookieStore.toString() },
+    });
     return data;
-  },
-  async fetchNoteById(id: string) {
-    const headers = await getHeaders();
-    const { data } = await instance.get<Note>(`/notes/${id}`, { headers });
-    return data;
-  },
+  }
 };

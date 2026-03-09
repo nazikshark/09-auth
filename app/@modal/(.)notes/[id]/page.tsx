@@ -1,15 +1,19 @@
-"use client";
+import { dehydrate, HydrationBoundary, QueryClient } from '@tanstack/react-query';
+import { serverApi } from '@/lib/api/serverApi';
+import NotePreviewClient from './NotePreview.client';
 
-import { useRouter } from "next/navigation";
-import Modal from "@/components/Modal/Modal";
+export default async function NoteModalPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const queryClient = new QueryClient();
 
-export default function NoteIdModalPage({ params }: { params: { id: string } }) {
-  const router = useRouter();
+  await queryClient.prefetchQuery({
+    queryKey: ['note', id],
+    queryFn: () => serverApi.getNoteById(id),
+  });
 
   return (
-    <Modal onClose={() => router.back()}>
-      <h2>Нотатка {params.id}</h2>
-      <p>Це перехоплений роут для перегляду окремої нотатки</p>
-    </Modal>
+    <HydrationBoundary state={dehydrate(queryClient)}>
+      <NotePreviewClient id={id} />
+    </HydrationBoundary>
   );
 }

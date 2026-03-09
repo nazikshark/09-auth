@@ -1,64 +1,35 @@
-import { instance } from './api';
-import { User } from '../../types/user';
-import { Note } from '../../types/note';
+import { api } from '@/app/api/api';
+import { Note } from '@/types/note';
+import { User } from '@/types/user';
 
-export interface NotesResponse {
-  notes: Note[];
-  totalPages: number;
-}
+export const clientApi = {
+  login: async (credentials: Pick<User, 'email'> & { password: string }): Promise<User> => {
+    const { data } = await api.post<User>('/auth/login', credentials);
+    return data;
+  },
 
-export const register = async (data: any) => {
-  const res = await instance.post<User>('/auth/register', data);
-  return res.data;
-};
+  register: async (userData: Omit<User, 'id'> & { password: string }): Promise<User> => {
+    const { data } = await api.post<User>('/auth/register', userData);
+    return data;
+  },
 
-export const login = async (data: any) => {
-  const res = await instance.post<User>('/auth/login', data);
-  return res.data;
-};
+  fetchNotes: async (params?: Record<string, string | number | boolean>): Promise<Note[]> => {
+    const { data } = await api.get<Note[]>('/notes', { params });
+    return data;
+  },
 
-export const logout = async () => {
-  await instance.post('/auth/logout');
-};
+  createNote: async (noteData: Omit<Note, 'id' | 'createdAt' | 'updatedAt'>): Promise<Note> => {
+    const { data } = await api.post<Note>('/notes', noteData);
+    return data;
+  },
 
-export const checkSession = async () => {
-  const res = await instance.get<User | null>('/auth/session');
-  return res.data;
-};
+  deleteNote: async (id: string): Promise<Note> => {
+    const { data } = await api.delete<Note>(`/notes/${id}`);
+    return data;
+  },
 
-export const getMe = async () => {
-  const res = await instance.get<User>('/users/me');
-  return res.data;
-};
-
-export const updateMe = async (data: { username: string }) => {
-  const res = await instance.patch<User>('/users/me', data);
-  return res.data;
-};
-
-export const fetchNotes = async (params: any) => {
-  const res = await instance.get<NotesResponse>('/notes', { params });
-  return res.data;
-};
-
-export const fetchNoteById = async (id: string) => {
-  const res = await instance.get<Note>(`/notes/${id}`);
-  return res.data;
-};
-
-export const getNoteById = fetchNoteById;
-
-export const createNote = async (data: any) => {
-  const res = await instance.post<Note>('/notes', data);
-  return res.data;
-};
-
-export const deleteNote = async (id: string) => {
-  const res = await instance.delete(`/notes/${id}`);
-  return res.data;
-};
-
-export const updateNote = async (id: string, data: any) => {
-  const res = await instance.patch<Note>(`/notes/${id}`, data);
-  return res.data;
+  updateMe: async (updates: Partial<User>): Promise<User> => {
+    const { data } = await api.patch<User>('/users/me', updates);
+    return data;
+  }
 };
