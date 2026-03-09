@@ -5,14 +5,12 @@ import { serverApi } from "./lib/api/serverApi";
 export const PUBLIC_ROUTES = ["/sign-in", "/sign-up"];
 export const PRIVATE_ROUTES = ["/notes", "/profile"];
 
-export const PROXY_URL = "https://ac.goit.global/text-notes";
-
 export function isPrivateRoute(pathname: string) {
-  return PRIVATE_ROUTES.some((route) => pathname.startsWith(route));
+  return PRIVATE_ROUTES.some((route) => pathname === route || pathname.startsWith(`${route}/`));
 }
 
 export function isPublicRoute(pathname: string) {
-  return PUBLIC_ROUTES.some((route) => pathname.startsWith(route));
+  return PUBLIC_ROUTES.some((route) => pathname === route || pathname.startsWith(`${route}/`));
 }
 
 export async function proxy(request: NextRequest) {
@@ -50,11 +48,10 @@ export async function proxy(request: NextRequest) {
 
     const setCookie = response.headers["set-cookie"];
     if (setCookie) {
-      if (Array.isArray(setCookie)) {
-        setCookie.forEach((cookie) => res.headers.append("set-cookie", cookie));
-      } else {
-        res.headers.set("set-cookie", setCookie);
-      }
+      const cookiesArray = Array.isArray(setCookie) ? setCookie : [setCookie];
+      cookiesArray.forEach((cookie) => {
+        res.headers.append("set-cookie", cookie);
+      });
     }
 
     return res;
