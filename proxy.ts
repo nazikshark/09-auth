@@ -62,7 +62,7 @@ export async function proxy(request: NextRequest) {
           if (lowerKey === "max-age") options.maxAge = Number(val);
           if (lowerKey === "httponly") options.httpOnly = true;
           if (lowerKey === "secure") options.secure = true;
-          if (lowerKey === "samelevel") options.sameSite = val;
+          if (lowerKey === "samesite") options.sameSite = val;
         });
 
         res.cookies.set(name.trim(), value.trim(), options);
