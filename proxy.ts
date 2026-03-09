@@ -35,7 +35,7 @@ export async function proxy(request: NextRequest) {
   }
 
   try {
-    const response = await serverApi.checkSession();
+    const response = await (serverApi.checkSession as any)(refreshToken);
     const user = response.data;
 
     let res: NextResponse;
@@ -49,8 +49,23 @@ export async function proxy(request: NextRequest) {
     const setCookie = response.headers["set-cookie"];
     if (setCookie) {
       const cookiesArray = Array.isArray(setCookie) ? setCookie : [setCookie];
-      cookiesArray.forEach((cookie) => {
-        res.headers.append("set-cookie", cookie);
+      cookiesArray.forEach((cookieStr) => {
+        const parts = cookieStr.split(";");
+        const [nameValue, ...rest] = parts;
+        const [name, value] = nameValue.split("=");
+        
+        const options: any = {};
+        rest.forEach(part => {
+          const [key, val] = part.trim().split("=");
+          const lowerKey = key.toLowerCase();
+          if (lowerKey === "path") options.path = val;
+          if (lowerKey === "max-age") options.maxAge = Number(val);
+          if (lowerKey === "httponly") options.httpOnly = true;
+          if (lowerKey === "secure") options.secure = true;
+          if (lowerKey === "samelevel") options.sameSite = val;
+        });
+
+        res.cookies.set(name.trim(), value.trim(), options);
       });
     }
 
