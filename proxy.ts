@@ -17,21 +17,45 @@ export function isPublicRoute(pathname: string) {
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  let user = null;
+  const accessToken = request.cookies.get("accessToken")?.value;
+  const refreshToken = request.cookies.get("refreshToken")?.value;
+
+  if (!accessToken && !refreshToken) {
+    if (isPrivateRoute(pathname)) {
+      return NextResponse.redirect(new URL("/sign-in", request.url));
+    }
+    return NextResponse.next();
+  }
+
   try {
     const response = await serverApi.checkSession();
-    user = response.data;
+    const user = response.data;
+
+    let res: NextResponse;
+
+    if (isPublicRoute(pathname) && user) {
+      res = NextResponse.redirect(new URL("/", request.url));
+    } else {
+      res = NextResponse.next();
+    }
+
+    const setCookie = response.headers["set-cookie"];
+    if (setCookie) {
+      if (Array.isArray(setCookie)) {
+        setCookie.forEach((cookie) => res.headers.append("set-cookie", cookie));
+      } else {
+        res.headers.set("set-cookie", setCookie);
+      }
+    }
+
+    return res;
   } catch (error) {
-    user = null;
+    if (isPrivateRoute(pathname)) {
+      const res = NextResponse.redirect(new URL("/sign-in", request.url));
+      res.cookies.delete("accessToken");
+      res.cookies.delete("refreshToken");
+      return res;
+    }
+    return NextResponse.next();
   }
-
-  if (isPrivateRoute(pathname) && !user) {
-    return NextResponse.redirect(new URL("/sign-in", request.url));
-  }
-
-  if (isPublicRoute(pathname) && user) {
-    return NextResponse.redirect(new URL("/notes", request.url));
-  }
-
-  return NextResponse.next();
 }
