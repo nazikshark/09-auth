@@ -1,22 +1,12 @@
-import type { Metadata } from "next";
-import { Roboto } from "next/font/google";
 import "./global.css";
-import TanStackProvider from "../components/TanStackProvider/TanStackProvider";
-import App from "../components/App/App";
-import Header from "../components/Header/Header";
-import Footer from "../components/Footer/Footer";
+import { AuthProvider } from "@/components/AuthProvider/AuthProvider";
+import { TanStackProvider } from "@/components/TanStackProvider/TanStackProvider";
 
-const roboto = Roboto({
-  subsets: ["latin", "cyrillic"],
-  weight: ["400", "500", "700"],
-});
-
-export const metadata: Metadata = {
+export const metadata = {
   title: "Notes App",
-  description: "Auth and Notes application",
+  description: "Next.js Notes Application",
 };
 
-// Додаємо modal до деструктуризації та типів
 export default function RootLayout({
   children,
   modal,
@@ -26,18 +16,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={roboto.className}>
+      <body>
         <TanStackProvider>
-          <App>
-            <div className="wrapper">
-              <Header />
-              <main className="main">
-                {children}
-                {modal} 
-              </main>
-              <Footer />
-            </div>
-          </App>
+          <AuthProvider>
+            <main>{children}</main>
+            {modal}
+          </AuthProvider>
         </TanStackProvider>
       </body>
     </html>
