@@ -1,9 +1,11 @@
+import { Metadata } from 'next';
 import { serverApi } from '@/lib/api/serverApi';
 import Image from 'next/image';
 import Link from 'next/link';
 
-export const metadata = {
+export const metadata: Metadata = {
   title: 'Profile | Notes App',
+  description: 'User profile page information',
 };
 
 export default async function ProfilePage() {
@@ -12,7 +14,7 @@ export default async function ProfilePage() {
   return (
     <div className="profile-container">
       <Image 
-        src={user.avatarUrl || '/default-avatar.png'} 
+        src={user.avatar || '/default-avatar.png'} 
         alt="Avatar" 
         width={100} 
         height={100} 

@@ -3,30 +3,43 @@
 import { useQuery } from '@tanstack/react-query';
 import { clientApi } from '@/lib/api/clientApi';
 import { useRouter } from 'next/navigation';
+import Modal from '@/components/Modal/Modal';
 
 export default function NotePreviewClient({ id }: { id: string }) {
   const router = useRouter();
-  const { data: note, isLoading } = useQuery({
+
+  const { data: note, isLoading, isError } = useQuery({
     queryKey: ['note', id],
-    queryFn: () => clientApi.fetchNotes().then(notes => notes.find(n => n.id === id)),
+    queryFn: () => clientApi.fetchNoteById(id),
   });
 
-  if (isLoading) return null;
+  const handleClose = () => {
+    router.back();
+  };
+
+  if (isLoading) {
+    return (
+      <Modal onClose={handleClose}>
+        <div className="loading">Завантаження...</div>
+      </Modal>
+    );
+  }
+
+  if (isError || !note) {
+    return (
+      <Modal onClose={handleClose}>
+        <div className="error">Помилка завантаження або нотатку не знайдено</div>
+      </Modal>
+    );
+  }
 
   return (
-    <div className="modal-overlay" onClick={() => router.back()}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <button className="close-btn" onClick={() => router.back()}>✕</button>
-        {note ? (
-          <>
-            <h2>{note.title}</h2>
-            <p>{note.content}</p>
-            <small>{note.tag}</small>
-          </>
-        ) : (
-          <p>Нотатку не знайдено</p>
-        )}
+    <Modal onClose={handleClose}>
+      <div className="note-preview">
+        <h2>{note.title}</h2>
+        <div className="tag">{note.tag}</div>
+        <p>{note.content}</p>
       </div>
-    </div>
+    </Modal>
   );
 }

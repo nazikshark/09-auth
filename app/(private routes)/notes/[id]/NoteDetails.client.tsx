@@ -6,7 +6,7 @@ import { clientApi } from '@/lib/api/clientApi';
 export default function NoteDetailsClient({ id }: { id: string }) {
   const { data: note, isLoading, isError } = useQuery({
     queryKey: ['note', id],
-    queryFn: () => clientApi.fetchNotes().then(notes => notes.find(n => n.id === id)),
+    queryFn: () => clientApi.fetchNoteById(id),
   });
 
   if (isLoading) return <div>Завантаження...</div>;

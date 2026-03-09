@@ -19,7 +19,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     const initAuth = async () => {
       try {
-        const userData = await clientApi.updateMe({}); 
+      
+        await clientApi.checkSession();
+        
+        const userData = await clientApi.getCurrentUser();
         setUser(userData);
       } catch (error) {
         setUser(null);

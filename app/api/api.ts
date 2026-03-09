@@ -1,6 +1,6 @@
 import axios from 'axios';
 
 export const api = axios.create({
-  baseURL: 'https://ac.goit.global/text-notes',
+  baseURL: 'https://notehub-api.goit.study',
   withCredentials: true,
 });
